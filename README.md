@@ -1,79 +1,66 @@
-# Sesi 4: Machine Learning & Tren Masa Depan AI
-**Pipeline *Hybrid Retrieval-Augmented Generation* (RAG) untuk AI Tutor Bebas Halusinasi**
+# Arsitektur Hybrid RAG untuk AI Tutor: Mencegah Halusinasi pada Domain Edukasi
 
-## 📖 Deskripsi Studi Kasus
-Dalam penerapan *Artificial Intelligence* (AI) berbasis *Large Language Model* (LLM) di sektor pendidikan atau pemerintahan, masalah terbesar yang sering muncul adalah halusinasi kondisi di mana AI memberikan jawaban yang terdengar meyakinkan namun faktanya salah atau mengarang bebas karena tidak memiliki dasar referensi yang spesifik.
+## Deskripsi
 
-Studi kasus ini mendemonstrasikan perancangan arsitektur mesin pencari dokumen hibrida (*Hybrid Retrieval*) yang menjadi jantung dari sistem RAG. Sebelum pertanyaan mahasiswa diteruskan ke AI untuk dijawab, sistem ini akan secara otomatis membongkar modul-modul akademik (*Knowledge Base*) guna menemukan paragraf konteks yang paling relevan. Pendekatan hibrida mengombinasikan pencarian leksikal (kecocokan kata kunci/TF-IDF) untuk presisi istilah teknis, dan pencarian semantik (makna kalimat) untuk memahami konteks pertanyaan.
+Proyek ini merupakan purwarupa arsitektur kecerdasan buatan terapan (*Applied AI*) yang berfokus pada pencegahan halusinasi *Large Language Model* (LLM) di sektor pendidikan. 
+Proyek ini mengimplementasikan prinsip dasar *Retrieval-Augmented Generation* (RAG) secara hibrida, seperti yang dibahas dalam materi praktisi AI terkini mengenai pentingnya penyediaan konteks atau *fact grounding* sebelum membiarkan model AI men-*generate* jawaban.
 
-## 🎯 Tujuan Eksekusi
-1. **Ekstraksi Pengetahuan (Knowledge Extraction):** Membangun basis data vektor sederhana dari potongan dokumen/modul akademik.
-2. **Pencarian Leksikal (Lexical Retrieval):** Mengimplementasikan algoritma berbasis frekuensi kata (seperti TF-IDF/BM25) untuk menangkap kecocokan istilah spesifik (misal: "Hukum Gestalt").
-3. **Penyediaan Konteks yang Kokoh (Fact Grounding):** Menyediakan konteks referensi yang mutlak bagi LLM agar jawaban yang dihasilkan bersumber murni dari literatur resmi, bukan dari tebakan model.
+## Tujuan
 
-## 💻 Implementasi Kode (Python - Scikit-Learn untuk RAG Retrieval Pipeline)
-Berikut adalah skrip purwarupa mesin pencari konteks yang dapat Anda jalankan melalui file `hybrid_rag_retrieval.py`.
+Tujuan proyek ini adalah:
+1. Memecahkan celah kelemahan (*gap*) LLM konvensional yang sering kali berhalusinasi atau memberikan jawaban umum di luar silabus kampus.
+2. Membangun basis pengetahuan (*Knowledge Base*) dari kumpulan modul akademik.
+3. Mengimplementasikan algoritma pencarian leksikal (berbasis TF-IDF/BM25) untuk mengukur relevansi dokumen secara matematis (*Cosine Similarity*).
+4. Mengevaluasi keandalan sistem dalam membedakan pertanyaan sesuai domain (*In-Domain*) versus pertanyaan di luar materi (*Out-of-Domain*).
 
-```python
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+## Studi Kasus
 
-print("=== PIPELINE RETRIEVAL RAG UNTUK AI TUTOR ===\n")
+Fakultas Teknik Universitas Bengkulu berencana mengimplementasikan *AI Tutor* untuk membantu mahasiswa belajar 24/7. Namun, sistem uji coba awal gagal karena AI sering menjawab pertanyaan teknis (seperti pemrograman atau matematika) dengan konsep yang salah, atau justru meladeni pertanyaan mahasiswa yang tidak relevan (seperti resep masakan).
+Solusinya adalah membangun *pipeline Retrieval RAG*. RAG berfungsi sebagai "pustakawan" digital. Saat mahasiswa bertanya, sistem tidak langsung memanggil ChatGPT/LLM. RAG akan terlebih dahulu menggeledah *database* modul resmi untuk mencari paragraf yang relevan. Jika konteks ditemukan, barulah LLM bertugas merangkumnya. Jika tidak ada di modul, sistem secara tegas akan menolak menjawab, sehingga risiko halusinasi dapat ditekan hingga 0%.
 
-# 1. Membangun Basis Pengetahuan (Knowledge Base) dari Modul Akademik
-database_modul = [
-    "Machine Learning adalah cabang AI yang fokus pada penggunaan data dan algoritma untuk meniru cara manusia belajar.",
-    "Hukum Gestalt dalam desain antarmuka menyatakan bahwa manusia secara visual mengelompokkan elemen yang berdekatan atau serupa.",
-    "Overfitting terjadi ketika model Machine Learning terlalu menghafal data latih sehingga gagal memprediksi data baru.",
-    "Pemrosesan citra dengan High Performance Computing memanfaatkan GPU untuk mengeksekusi matriks secara paralel.",
-    "Kelemahan sistem peringatan dini konvensional adalah tingginya extraneous load akibat antarmuka yang penuh chartjunk."
-]
+## Dataset
 
-# 2. Inisialisasi Mesin Pencari Leksikal (TF-IDF Vectorizer)
-# Pada skala industri, ini merepresentasikan fungsi BM25
-vectorizer = TfidfVectorizer()
-vektor_dokumen = vectorizer.fit_transform(database_modul)
+Dataset yang digunakan merupakan kumpulan teks sintetis yang merepresentasikan 25 paragraf modul akademik Informatika (mulai dari materi Jaringan Komputer, Rekayasa Perangkat Lunak, hingga Sistem Cerdas). Dataset ini di-*generate* menggunakan algoritma *list comprehension* untuk menyimulasikan basis pengetahuan fakultas.
 
-def cari_konteks_relevan(pertanyaan, top_k=1):
-    """
-    Fungsi untuk mencari paragraf paling relevan di dalam database 
-    berdasarkan pertanyaan pengguna.
-    """
-    # Mengubah pertanyaan menjadi vektor matematis
-    vektor_pertanyaan = vectorizer.transform([pertanyaan])
-    
-    # Menghitung kemiripan (Cosine Similarity) antara pertanyaan dan seluruh dokumen
-    skor_kemiripan = cosine_similarity(vektor_pertanyaan, vektor_dokumen).flatten()
-    
-    # Mengurutkan hasil dari skor tertinggi ke terendah
-    indeks_terbaik = np.argsort(skor_kemiripan)[::-1][:top_k]
-    
-    hasil = []
-    for idx in indeks_terbaik:
-        if skor_kemiripan[idx] > 0: # Pastikan ada relevansi
-            hasil.append((skor_kemiripan[idx], database_modul[idx]))
-            
-    return hasil
+## Metode
 
-# 3. Skenario Pengujian (Simulasi Interaksi Mahasiswa)
-daftar_pertanyaan = [
-    "Apa penyebab utama model gagal memprediksi data baru?",
-    "Jelaskan mengenai Hukum Gestalt dalam UI/UX!",
-    "Bagaimana cara memasak rendang yang enak?" # Pertanyaan di luar konteks (Out of Domain)
-]
+Tahapan utama yang dilakukan:
+1. *Corpus Initialization* (Pembuatan kumpulan modul pengetahuan).
+2. *Vectorization* (Transformasi dokumen teks menjadi matriks angka 2D menggunakan algoritma *Term Frequency-Inverse Document Frequency* / TF-IDF).
+3. *Similarity Scoring* (Penghitungan jarak metrik antarkata menggunakan *Cosine Similarity*).
+4. *Threshold Tuning* (Menetapkan batas skor minimal/ambang batas agar sistem berani menolak pertanyaan di luar konteks).
 
-print("--- SIMULASI PENCARIAN KONTEKS (FACT GROUNDING) ---")
-for q in daftar_pertanyaan:
-    print(f"\n🙋‍♂️ Pertanyaan Mahasiswa : '{q}'")
-    konteks_ditemukan = cari_konteks_relevan(q)
-    
-    print("🤖 Sistem Retrieval RAG :")
-    if konteks_ditemukan:
-        skor, teks = konteks_ditemukan[0]
-        print(f"   [✓] Konteks Ditemukan (Skor Relevansi: {skor:.2f})")
-        print(f"   [>] '{teks}'")
-        print("   [INFO] Konteks ini akan dikirim ke LLM (IndoBERT/GPT) untuk dirangkum menjadi jawaban.")
-    else:
-        print("   [X] Peringatan: Tidak ada konteks yang relevan di dalam modul akademik!")
-        print("   [INFO] AI Tutor akan diinstruksikan untuk menjawab: 'Maaf, materi tersebut tidak ada dalam silabus.' (Mencegah Halusinasi)")
+## Evaluasi
+
+Performa sistem *retrieval* dievaluasi menggunakan:
+*   **Relevance Score (0.0 - 1.0):** Tingkat kemiripan dokumen dengan pertanyaan.
+*   **Domain Segregation Accuracy:** Kemampuan sistem menolak 100% pertanyaan yang sengaja disisipkan dari luar domain (misal: pertanyaan tentang politik atau memasak).
+Berbeda dengan *Machine Learning* klasik yang mengevaluasi prediksi (*Accuracy/Recall*), evaluasi sistem RAG sangat bergantung pada kemampuan mesin pencarinya ( *Retriever*) untuk menemukan dokumen rujukan yang mutlak benar.
+
+## Teknologi
+
+*   Python
+*   Google Colab / Jupyter Notebook (`.ipynb`)
+*   Scikit-Learn (`TfidfVectorizer`, `cosine_similarity`)
+*   NumPy
+*   Pandas
+
+## Cara Menjalankan
+
+1. Proyek dapat dijalankan menggunakan Google Colab.
+2. Buka file `rag_hybrid_retrieval.ipynb` menggunakan Google Colab.
+3. Jalankan *notebook* dari awal hingga akhir.
+4. Pada *cell* terakhir, Anda akan melihat matriks evaluasi dan simulasi tanya-jawab *AI Tutor* yang merespons pertanyaan *in-domain* maupun *out-of-domain* secara otomatis.
+
+
+## Kesimpulan
+Proyek ini membuktikan bahwa masa depan Generative AI bukanlah sekadar menggunakan LLM terbesar, melainkan mengontrol LLM tersebut dengan arsitektur data engineering yang solid.
+Dengan menerapkan pipeline RAG, kita menggeser peran AI dari sekadar "penghasil teks yang fasih berhalusinasi" menjadi "asisten akademik yang berbasis pada fakta". Implementasi skor ambang batas (threshold) memastikan integritas akademik tetap terjaga, memisahkan secara tegas mana materi resmi kampus dan mana pertanyaan di luar silabus.
+
+## Struktur Repository
+
+```text
+sesi-4-ml/
+├── rag_hybrid_retrieval.ipynb
+├── README.md
+└── requirements.txt
