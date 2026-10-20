@@ -2,7 +2,7 @@
 **Pipeline *Hybrid Retrieval-Augmented Generation* (RAG) untuk AI Tutor Bebas Halusinasi**
 
 ## 📖 Deskripsi Studi Kasus
-Dalam penerapan *Artificial Intelligence* (AI) berbasis *Large Language Model* (LLM) di sektor pendidikan atau pemerintahan, masalah terbesar yang sering muncul adalah **halusinasi**—kondisi di mana AI memberikan jawaban yang terdengar meyakinkan namun faktanya salah atau mengarang bebas karena tidak memiliki dasar referensi yang spesifik.
+Dalam penerapan *Artificial Intelligence* (AI) berbasis *Large Language Model* (LLM) di sektor pendidikan atau pemerintahan, masalah terbesar yang sering muncul adalah halusinasi kondisi di mana AI memberikan jawaban yang terdengar meyakinkan namun faktanya salah atau mengarang bebas karena tidak memiliki dasar referensi yang spesifik.
 
 Studi kasus ini mendemonstrasikan perancangan arsitektur mesin pencari dokumen hibrida (*Hybrid Retrieval*) yang menjadi jantung dari sistem RAG. Sebelum pertanyaan mahasiswa diteruskan ke AI untuk dijawab, sistem ini akan secara otomatis membongkar modul-modul akademik (*Knowledge Base*) guna menemukan paragraf konteks yang paling relevan. Pendekatan hibrida mengombinasikan pencarian leksikal (kecocokan kata kunci/TF-IDF) untuk presisi istilah teknis, dan pencarian semantik (makna kalimat) untuk memahami konteks pertanyaan.
 
